@@ -1,0 +1,11 @@
+defaults: &defaults
+  store_storage: 'file'
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults

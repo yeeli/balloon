@@ -1,0 +1,7 @@
+en:
+  errors:
+    messages:
+      response_error: "Http download errors"
+      connection_failed: "Http connection failed"
+      timeout_error: "Http connection time out"
+      down_mime_error: "Download file content type error"

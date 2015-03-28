@@ -1,0 +1,10 @@
+*.gem
+.bundle
+Gemfile.lock
+pkg/*
+.*.swp
+.swp
+spec/fixtures/tmp
+spec/fixtures/public
+spec/fixtures/cache
+spec/config/balloon.yml
