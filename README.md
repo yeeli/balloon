@@ -59,17 +59,11 @@ upload.from_store(:t) #获得图片Path
 	
 在运行命令后， 会在config目录中生成一个balloon.yml配置文件
 
-###### 默认balloon.yml配置格式
+###### 默认生成balloon.yml文件
 
 ````
 defaults: &defaults
-  store_storage: 'file' # 默认为文件储存， file: 文件储存， upyun: 又拍云存储
-  asset_host : '' # asset 文件
-  root: '' # 储存目录
-  permissions: 0777 # 生成文件目录权限
-  store_dir: "public" # 默认生成文件储存位置
-  tmp_dir: "tmp" # 临时文件储存位置
-  url_get_db_storage: true
+  store_storage: 'file' 
   
 development:
   <<: *defaults
@@ -81,6 +75,21 @@ production:
   <<: *defaults
 ````
 
+balloon.yml 配置介绍
+
+```
+store_storage:  设置 文件储存位置， file: 文件储存， upyun: 又拍云存储
+
+asset_host : 设置 asset
+  
+root: 设置主目录， 默认为当前应用程序的主目录
+  
+permissions: 设置生成文件目录权限， 默认为0777
+
+store_dir: 设置存储目录， 默认为主目录下的"public"目录
+  
+cache_dir: "tmp" # 设置临时文件储存目录， 默认为主目录下的“tmp”目录
+```
 
 ###### 在为model文件添加下列格式
   
@@ -92,12 +101,27 @@ Mongomapper, Mongoid
     include Balloon::Up
     
     uploader :image, :db 
-    uploader_size t: "45", s: "450", m: "770", l: "920>" # 图片上传操作
-    uploader_dir "uploads/product" # 图片在"public"目录下指定位置
-    uploader_mimetype_white %w{image/jpeg image/png image/gif} #允许上传图片格式
-    uploader_name_format name: Proc.new{|p| p.id.to_s } #对上传文件重命名
+    uploader_size t: "45", s: "450", m: "770"
+    uploader_dir "uploads/product"
+    uploader_mimetype_white %w{image/jpeg image/png image/gif}
+    uploader_name_format name: Proc.new{|p| p.id.to_s }
   end 
 ```
+
+model 配置介绍
+
+```
+uploder 设置uploader名称， :db 后台生成数据key
+
+uploader_size #设置文件裁切大小及文件名, 裁切格式参考
+
+uploader_dir #设置上传目录， 未指定，默认为uploader设置的name为目录名
+
+uploader_mimetype_white #设置上传白名单
+
+uploader_name_format #对上传文件进行重命名， 
+```
+
 
 ActiveRecord
 
@@ -112,17 +136,13 @@ ActiveRecord
 class CreateImages < ActiveRecord::Migration
   def change
     create_table :pictures do |t|
-      t.column :file_name, :string
-      t.column :content_type, :string
-      t.column :file_size, :integer
-      t.column :storage, :string
-      t.column :created_at, :datetime
+      t.string :file_name
+      t.string :content_type
+      t.integer :file_size
+      t.string :storage
+      t.datetime :created_at
       t.timestamps
     end
-  end
-
-  def down
-    drop_table :pictures
   end
 end
 
@@ -156,7 +176,7 @@ end
   upyun_username: ""
   upyun_password: ""
   upyun_timeout: 600
-  upyun_is_image: true # true: 又怕云为图片空间Balloon将只上传原图， false: 又拍云为普通空间， 将会上传所有图片
+  upyun_is_image: true # true: 又拍云为图片空间Balloon将只上传原图， false: 又拍云为普通空间， 将会上传所有图片
 ```
 
 

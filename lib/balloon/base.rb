@@ -14,7 +14,8 @@ module Balloon
         end
 
         def set_storage_engine
-          @storage_engine = eval(STORAGE_EGINE[store_storage.to_sym]).new(self) if !respond_to?(:@storage_engine)
+          return if respond_to?(:@storage_engine)
+          @storage_engine = eval(STORAGE_EGINE[store_storage.to_sym]).new(self) 
         end
       RUBY
     end
@@ -22,6 +23,7 @@ module Balloon
     # upload file save storage
     #
     # @param [File] upload_file the upload file
+    #
     def upload_store(upload_file = nil)
       uploader_file = upload_file.nil? ? @file : upload_file
       save_to_cache(uploader_file)

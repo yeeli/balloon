@@ -5,12 +5,10 @@ module Balloon
     extend ActiveSupport::Concern
 
     def resize_with_string(file)
-      width = ""
-      height = ""
+      width, height = "", ""
       oranginl_img = MiniMagick::Image.open(file.path)
       auto_orient!(oranginl_img, file.path)
-      return {width: oranginl_img[:width], height: oranginl_img[:height] } if store_storage.to_s == "upyun" && upyun_is_image
-      if self.respond_to?(:uploader_size)
+      if self.respond_to?(:uploader_size) && !(store_storage.to_s == "upyun" && upyun_is_image)
         uploader_size.each do |s, o|
           img = MiniMagick::Image.open(file.path)
           raise ProcessError, "process error" unless img

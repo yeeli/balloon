@@ -26,12 +26,11 @@ module Balloon
           end
 
           def uploader_save
-            if !info.nil?
-              set_storage_engine
-              store_info = storage_engine.store!
-              @info[:filename] = store_info[:filename]
-              @info[:basename] = store_info[:basename]
-            end
+            return if info.nil?
+            set_storage_engine
+            store_info = storage_engine.store!
+            @info[:filename] = store_info[:filename]
+            @info[:basename] = store_info[:basename]
           end
 
           def uploader_name
@@ -70,14 +69,13 @@ module Balloon
 
         class_eval <<-RUBY
           def save_db
-            if !info.nil?
-              self.file_name = info[:filename]
-              self.content_type = info[:mime_type]
-              self.file_size = info[:size]
-              self.storage = store_storage.to_s
-              self.width = info[:width]
-              self.height = info[:height]
-            end
+            return if info.nil?
+            self.file_name = info[:filename]
+            self.content_type = info[:mime_type]
+            self.file_size = info[:size]
+            self.storage = store_storage.to_s
+            self.width = info[:width]
+            self.height = info[:height]
           end
 
           def url(size_name = nil)
@@ -90,7 +88,7 @@ module Balloon
           end
 
           def uploader_delete
-           return  if !respond_to?(:file_name) || file_name.nil?
+           return if !respond_to?(:file_name) || file_name.nil?
            extension = self.file_name.to_s.match(%r"(?!\\.{1})\\w{2,}$")
            basename = self.file_name.to_s.gsub(%r"\\.{1}\\w{2,}$",'')
            @info = { basename: basename, extension: extension.to_s }

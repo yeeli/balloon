@@ -1,5 +1,6 @@
 #coding:utf-8
 require "balloon/version"
+require 'active_support'
 require 'active_support/core_ext'
 
 module Balloon
