@@ -23,17 +23,16 @@ module Balloon
         response = connection.put(store_original_file, file.read, file.size)
         raise "Connection errors" if response.nil?
 
-        if !@uploader.upyun_is_image  
-          if @uploader.respond_to?(:uploader_size)
-            @uploader.uploader_size.each do |s, o|
-              store_file = ::File.join _store_path, set_upload_name(s)
-              cache_file = ::File.join @uploader.cache_path, @uploader.info[:basename]+ "_#{s}"+"."+ @uploader.info[:extension]
-              file = ::File.new cache_file
-              connection.put(store_file, file.read, file.size)
-            end
+        if !@uploader.upyun_is_image && @uploader.respond_to?(:uploader_size)
+          @uploader.uploader_size.each do |s, o|
+            store_file = ::File.join _store_path, set_upload_name(s)
+            cache_file = ::File.join @uploader.cache_path, @uploader.info[:basename]+ "_#{s}"+"."+ @uploader.info[:extension]
+            file = ::File.new cache_file
+            connection.put(store_file, file.read, file.size)
           end
         end
-        return { filename: original_file, basename: store_name}
+
+        return { filename: original_file, basename: store_name }
       end
 
       def retrieve!(size_name = nil)
@@ -51,12 +50,10 @@ module Balloon
         _store_path = store_path
         store_original_file = ::File.join _store_path, store_filename
         response = connection.delete(store_original_file)
-        if !@uploader.upyun_is_image  
-          if @uploader.respond_to?(:uploader_size)
-            @uploader.uploader_size.each do |s, o|
-              store_file = ::File.join _store_path, store_filename(s)
-              connection.delete(store_file)
-            end
+        if !@uploader.upyun_is_image && @uploader.respond_to?(:uploader_size)
+          @uploader.uploader_size.each do |s, o|
+            store_file = ::File.join _store_path, store_filename(s)
+            connection.delete(store_file)
           end
         end
       end
@@ -74,11 +71,8 @@ module Balloon
       end
 
       def store_filename(size_name = nil)
-        if size_name == nil
-          upload_file[:basename] + "." + upload_file[:extension]
-        else
-          upload_file[:basename] + "_" + size_name.to_s + "." + upload_file[:extension]
-        end
+        return upload_file[:basename] + "." + upload_file[:extension] if size_name == nil
+        upload_file[:basename] + "_" + size_name.to_s + "." + upload_file[:extension]
       end
 
       def conn_url
@@ -86,7 +80,7 @@ module Balloon
       end
 
       def conn_headers
-        @uploader.upyun_headers.merge({'Mkdir' => 'true', 'Expect' => '', 'Date' => Time.now.httpdate })
+        @uploader.upyun_headers.merge({ 'Mkdir' => 'true', 'Expect' => '', 'Date' => Time.now.httpdate })
       end
 
       def store_path

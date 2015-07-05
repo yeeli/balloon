@@ -31,9 +31,7 @@ module Balloon
         ClassMethods.class_eval <<-RUBY
           attr_writer :#{name}
           alias :uploader_#{name} :#{name}=
-          def #{name}
-            @#{name}
-          end
+          def #{name}; @#{name}; end
         RUBY
 
         class_eval <<-RUBY

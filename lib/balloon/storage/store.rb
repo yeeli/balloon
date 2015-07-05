@@ -22,27 +22,24 @@ module Balloon
       end
 
       def store_name
-        if @uploader.respond_to?(:uploader_name_format) 
-          name_format = @uploader.uploader_name_format
-          name = name_format[:name]
-          if name_format[:format].to_s == "downcase" 
-            name = name.downcase
-          elsif name_format[:format].to_s == "upcase"
-            name = name.upcase
-          end
+        return upload_file[:basename] if !@uploader.respond_to?(:uploader_name_format) 
+        name_format = @uploader.uploader_name_format
+        name = name_format[:name]
+        if name_format[:format].to_s == "downcase" 
+          name = name.downcase
+        elsif name_format[:format].to_s == "upcase"
+          name = name.upcase
         else
-          name = upload_file[:basename]
+          name
         end
-        return name
       end
 
       def set_upload_name(size_name = nil )
         if size_name 
-          store_file = store_name + "_#{size_name.to_s}" + "." + upload_file[:extension] 
+          store_name + "_#{size_name.to_s}" + "." + upload_file[:extension] 
         else
-          store_file = store_name + "." + upload_file[:extension] 
+          store_name + "." + upload_file[:extension] 
         end
-        return store_file
       end
 
       def connection

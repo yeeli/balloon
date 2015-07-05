@@ -114,7 +114,7 @@ module Balloon
     end
 
     def empty?
-      @file.nil? || self.size.nil? || (self.size.zero? && ! self.exists?)
+      @file.nil? || self.size.nil? || ( self.size.zero? && !self.exists? )
     end
 
     def exists?
@@ -152,38 +152,31 @@ module Balloon
 
     def sanitize(name)
       name = name.gsub("\\", "/")
-      name = name.gsub SANITIZE_REGEX, "_" 
+      name = name.gsub(SANITIZE_REGEX, "_") 
       name = "_#{name}" if name =~ /\A\.+\z/
-        name = "unnamed" if name.size == 0
+      name = "unnamed" if name.size == 0
       #name = name.downcase
       return name.mb_chars.to_s
     end
 
     def split_extension(filename)
       FILENAME_REGEX.each do |regexp|
-        if filename =~ regexp
-          return $1, $2
-        end
+        return $1, $2 if filename =~ regexp
       end
       return filename, ""
     end
 
     def get_mime_type(mime_type)
-      if !mime_type.empty?
-        mime_type.first.content_type
-      end
+      mime_type.first.content_type if !mime_type.empty?
     end
 
     def read_mime_type
       content = read(10)
-      if !content.blank?
-        IMAGE_REGEX.each do |regexp|
-          if content =~ %r"^#{regexp[0].force_encoding("binary")}"
-            return regexp[1]
-          end
-        end
-        return nil
+      return if content.blank?
+      IMAGE_REGEX.each do |regexp|
+        return regexp[1] if content =~ %r"^#{regexp[0].force_encoding("binary")}"
       end
+      return nil
     end
 
     def command_mime_type

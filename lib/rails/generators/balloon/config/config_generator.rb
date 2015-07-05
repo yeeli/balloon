@@ -10,7 +10,6 @@ module Balloon
       def create_config_file
         template 'balloon.yml', File.join('config', 'balloon.yml')
       end
-      
     end
   end
 end
