@@ -52,9 +52,7 @@ module Balloon
           key :file_size, Integer
           key :storage, String
           key :created_at
-        end
-
-        if defined?(Mongoid)
+        elsif defined?(Mongoid)
           field :file_name, type: String
           field :width, type: Integer
           field :height, type: Integer
