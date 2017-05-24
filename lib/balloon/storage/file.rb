@@ -27,7 +27,7 @@ module Balloon
       def retrieve!(size_name = nil)
         return "" if !upload_file
         path = ::File.join upload_dir, store_filename(size_name)
-        return "/" + path if @uploader.assert_host.nil?
+        return "/" + path if @uploader.asset_host.nil?
         @uploader.asset_host + "/" + path
       end
 
