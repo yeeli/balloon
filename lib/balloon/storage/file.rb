@@ -10,13 +10,13 @@ module Balloon
         end
 
         original_file = set_upload_name
-        store_original_file = ::File.join _store_path, original_file       
+        store_original_file = ::File.join _store_path, original_file
         cache_original_file = ::File.join @uploader.cache_path, @uploader.info[:filename]
         FileUtils.mv cache_original_file, store_original_file
 
         if @uploader.respond_to?(:uploader_size)
           @uploader.uploader_size.each do |s, o|
-            store_file = ::File.join _store_path, set_upload_name(s)    
+            store_file = ::File.join _store_path, set_upload_name(s)
             cache_file = ::File.join @uploader.cache_path, @uploader.info[:basename]+ "_#{s}"+"."+ @uploader.info[:extension]
             FileUtils.mv cache_file, store_file
           end
@@ -28,7 +28,7 @@ module Balloon
         return "" if !upload_file
         path = ::File.join upload_dir, store_filename(size_name)
         return "/" + path if @uploader.assert_host.nil?
-        @uploader.assert_host + "/" + path
+        @uploader.asset_host + "/" + path
       end
 
       def delete!

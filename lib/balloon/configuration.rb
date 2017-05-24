@@ -12,7 +12,7 @@ module Balloon
         set_config :store_storage
         set_config :cache_dir
         set_config :store_dir
-        set_config :assert_host
+        set_config :asset_host
 
         set_config :upyun_api_host
         set_config :upyun_username
