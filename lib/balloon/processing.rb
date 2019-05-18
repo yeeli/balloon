@@ -63,7 +63,7 @@ module Balloon
     end
 
     def auto_orient!(img, file)
-      if img["exif:orientation"] == "6" || img["exif:orientation"] == "8"
+      if img.exif["Orientation"].to_i > 1
         img.auto_orient
         img.write file
       end
