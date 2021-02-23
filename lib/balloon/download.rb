@@ -6,7 +6,7 @@ module Balloon
     extend ActiveSupport::Concern
 
     def down_url(uri)
-      connection = ::Faraday.new
+      connection = ::Faraday.new({:ssl => {:verify => false}})
       response = connection.get(uri)
       generate_down_cache_directory
       path = File.join down_cache_path, generate_down_id
