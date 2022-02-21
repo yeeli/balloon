@@ -8,7 +8,8 @@ if defined?(Rails)
       initializer "Baloon.configure_rails_initializeation" do
         config_file = Rails.root.join('config/balloon.yml')
         if config_file.file?
-          config = YAML.load(ERB.new(config_file.read).result)
+          config_result = config_file.read
+          config = Psych.load_stream(ERB.new(config_result).result)[0]
           Balloon.configure_load(config, Rails.env)
         end
       end
@@ -25,7 +26,8 @@ elsif defined?(Sinatra)
   Balloon.root = root
   config_file = File.join(root, 'config/balloon.yml')
   if File.exist?(config_file)
-    config = YAML.load(ERB.new(File.read(config_file)).result)
+    config_result = File.read(config_file)
+    config = Psych.load_stream(ERB.new(config_result).result)[0]
     Balloon.configure_load(config, env)
   end
 end

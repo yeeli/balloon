@@ -1,13 +1,13 @@
-#coding:utf-8
-require "balloon/version"
+require 'balloon/version'
 require 'active_support'
 require 'active_support/core_ext'
 
+# Balloon
 module Balloon
   class << self
     attr_accessor :root
     def configure(&block)
-      Balloon::Base.configure &block   
+      Balloon::Base.configure &block
     end
 
     def configure_load(config, env)
