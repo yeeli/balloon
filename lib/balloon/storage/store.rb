@@ -24,7 +24,7 @@ module Balloon
 
       def store_name
         if !@uploader.respond_to?(:uploader_name_format)
-          return upload_file[:basename]
+          return @uploader.cache_meta[:basename]
         end
 
         name_format = @uploader.uploader_name_format

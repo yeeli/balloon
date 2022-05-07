@@ -22,6 +22,3 @@ end
 
 upload = Upload.new("input.gif")
 upload.upload_store
-p upload.image
-
-p upload.from_store(:thumb)

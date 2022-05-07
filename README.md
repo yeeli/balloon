@@ -1,7 +1,8 @@
 # Balloon 
 
 
-Balloon是基于Ruby的图片上传插件， 并且可以完美配合Rails使用。
+Balloon是基于mini_magick的Rails项目图片上传插件。
+
 
 
 ## 安装
@@ -25,30 +26,47 @@ Balloon是基于Ruby的图片上传插件， 并且可以完美配合Rails使用
 
     $ gem install balloon
 
+
+
 ## 单独使用
 
-```
+Class 例子
+
+```ruby
 require 'balloon'
 
 Balloon.configure do |config|
   config.store_storage = :file
+  config.root = "output"
 end
 
 class Upload < Balloon::Base
-  uploader :avatar
-  uploader_size t: "100x100"
-  uploader_name_format 
+  uploader :image
+  uploader_dir 'uploads'
+  uploader_mimetype_white %w[image/jpeg image/png image/gif image/webp]
+  uploader_name_format name: "output", format: "upcase" # 输出文件名
+  uploader_type_format 'webp' # ImageMagick支持的类型
+  uploader_size thumb: "100x100", small: "200x", medium: '500x>' # https://legacy.imagemagick.org/Usage/resize/
 end
+```
 
-file = File.new("file.jpg")
+文件上传
 
-upload = Upload.new("file")
+````ruby
+file = File.new("input.jpg")
+upload = Upload.new(file)
+
+or
+
+upload = Upload.new("input.jpg")
 
 upload.upload_store #上传图片
+upload.image #获取图片上传信息
 
 upload.from_store(:t) #获得图片Path
+````
 
-```
+
 
 ## 在Rails中使用
 
@@ -56,7 +74,7 @@ upload.from_store(:t) #获得图片Path
 在Rails应用程序中运行下述命令来完成Balloon插件的初始化
 
 	$ rails g balloon:config
-	
+
 在运行命令后， 会在config目录中生成一个balloon.yml配置文件
 
 ###### 默认生成balloon.yml文件
@@ -91,22 +109,7 @@ store_dir: 设置存储目录， 默认为主目录下的"public"目录
 cache_dir: "tmp" # 设置临时文件储存目录， 默认为主目录下的“tmp”目录
 ```
 
-###### 在为model文件添加下列格式
-  
-Mongomapper, Mongoid
 
-```
-  class Image 
-    include MongoMapper::Document
-    include Balloon::Up
-    
-    uploader :image, :db 
-    uploader_size t: "45", s: "450", m: "770"
-    uploader_dir "uploads/product"
-    uploader_mimetype_white %w{image/jpeg image/png image/gif}
-    uploader_name_format name: Proc.new{|p| p.id.to_s }
-  end 
-```
 
 model 配置介绍
 
@@ -123,7 +126,8 @@ uploader_name_format #对上传文件进行重命名，
 ```
 
 
-ActiveRecord
+
+#### ActiveRecord
 
 先生成 model文件
 
@@ -131,12 +135,15 @@ ActiveRecord
 
 并修改migration文件, 为下列格式
 
-```
+```ruby
 
 class CreateImages < ActiveRecord::Migration
   def change
     create_table :pictures do |t|
+      t.string :file_id, null: false, index: true
       t.string :file_name
+      t.integer :width
+      t.integer :height
       t.string :content_type
       t.integer :file_size
       t.string :storage
@@ -148,29 +155,73 @@ end
 
 ```
 
-在 model 文件
+model 文件
 
-```
-class Image < ActiveRecord::Base
+```ruby
+class Picture < ActiveRecord::Base
   include Balloon::Up
     
-  uploader :image
+  uploader :image, :db
+  uploader_dir 'uploads/images'
+  uploader_mimetype_white %w[image/jpeg image/png image/gif image/webp]
+  uploader_name_format name: proc { |img| img.file_id }
+  uploader_type_format 'webp'
+  uploader_size thumb: '150x', small: '450x>'
+    
+  before_validation :create_file_id, on: :create
+  
+  def create_file_id
+    self.file_id = generate_file_id
+  end
+
+  def generate_file_id
+    loop do
+      token = SecureRandom.hex
+      break token unless Picture.exists?(file_id: token)
+    end
+  end  
 end
 
 ```
 
-###### rails实现图片上传
+
+
+####  Mongoid
+
+```
+  class Image 
+    include MongoMapper::Document
+    include Balloon::Up
+    
+    uploader :image, :db 
+    uploader_size t: "45", s: "450", m: "770"
+    uploader_dir "uploads/product"
+    uploader_mimetype_white %w{image/jpeg image/png image/gif}
+    uploader_name_format name: Proc.new{|p| p.id.to_s }
+  end 
+```
+
+
+
+#### rails 实现图片上传
 
 直接试用model原生操作， 用uploader设置的参数作为上传参数
-  
- 	@image = Images.new(image: file)
- 	@image.save
 
-###### 又拍云支持
+```ruby
+@picture = Picture.new(image: params[:image])
+@picture.save
+
+@picture.url #获取原图
+@picture.url(size) #获得图片地址
+```
+
+
+
+##### 又拍云支持
 
 将store_storage 修改为 ‘upyun’, 在config/balloon.yml内添加下列内容
 
-```
+```yaml
   upyun_domain: ""
   upyun_bucket: "" 
   upyun_username: ""
@@ -181,5 +232,3 @@ end
 
 
 
-
- 
