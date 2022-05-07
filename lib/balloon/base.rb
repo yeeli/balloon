@@ -9,6 +9,10 @@ module Balloon
           @file = upload_file.is_a?(Hash) ? upload_file[:#{name}] : upload_file 
         end
 
+        def #{name}
+          @meta
+        end
+
         def uploader_name
           "#{name}".pluralize
         end
@@ -28,8 +32,8 @@ module Balloon
       uploader_file = upload_file.nil? ? @file : upload_file
       save_to_cache(uploader_file)
       store_info = storage_engine.store!
-      @info[:filename] = store_info[:filename]
-      @info[:basename] = store_info[:basename]
+      @meta[:filename] = store_info[:filename]
+      @meta[:basename] = store_info[:basename]
     end
     
     def from_store(size_name = nil)

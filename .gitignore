@@ -8,3 +8,4 @@ spec/fixtures/tmp
 spec/fixtures/public
 spec/fixtures/cache
 spec/config/balloon.yml
+examples/output

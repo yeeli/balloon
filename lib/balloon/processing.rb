@@ -4,68 +4,118 @@ module Balloon
   module Processing
     extend ActiveSupport::Concern
 
-    def resize_with_string(file)
-      width, height = "", ""
-      oranginl_img = MiniMagick::Image.open(file.path)
-      auto_orient!(oranginl_img, file.path)
-      if self.respond_to?(:uploader_size) && !(store_storage.to_s == "upyun" && upyun_is_image)
-        uploader_size.each do |s, o|
-          img = MiniMagick::Image.open(file.path)
-          raise ProcessError, "process error" unless img
-          width = img[:width]
-          height = img[:height]
-          new_img = resize(img, o)
-          new_img.write File.join(cache_path, "#{file.basename}_#{s}.#{file.extension}")
-        end
+    def image_processing(image)
+      ext = image.extension
+
+      if respond_to?(:uploader_type_format)
+        ext = uploader_type_format
       end
-      return {width: oranginl_img[:width], height: oranginl_img[:height]}
+
+      processed_img = handle_original(image, ext)
+
+      handle_resize(image, ext)
+
+      mime_type = processed_img.mime_type
+      extension = FileExtension.get_extension(mime_type)
+      filename = "#{image.basename}.#{extension}"
+
+      return {
+        basename: image.basename,
+        width: processed_img.width,
+        height: processed_img.height,
+        size: processed_img.size,
+        filename: filename,
+        mime_type: mime_type,
+        extension: extension
+      }
     end
 
-    def resize(image, size)
+    def handle_original(file, ext)
+      original_image =  MiniMagick::Image.open(file.path)
+      convert = MiniMagick::Tool::Convert.new
+      convert << file.path
+
+      auto_orient!(original_image, convert)
+      convert.format ext
+
+      cache_file = File.join(cache_path, "#{file.basename}.#{ext}")
+      convert << cache_file
+      convert.call
+      
+      return MiniMagick::Image.open(cache_file)
+    end
+
+    def handle_resize(file, ext)
+      return unless self.respond_to?(:uploader_size)
+      return if store_storage.to_s == "upyun" && upyun_is_image
+
+      uploader_size.each do |size, o|
+        img = MiniMagick::Image.open(file.path)
+        raise ProcessError, "process error" unless img
+
+        convert = MiniMagick::Tool::Convert.new
+        convert << file.path
+
+        auto_orient!(img, convert)
+        convert.format ext
+
+        resize(convert, img, o)
+        cache_file = File.join(cache_path, "#{file.basename}_#{size}.#{ext}")
+        convert << cache_file
+        convert.call
+
+        # img.write File.join(cache_path, "#{file.basename}_#{size}.#{ext}")
+      end
+    end
+
+    def resize(convert, image, size)
       width, height, symbol = size[:width], size[:height], size[:symbol]     
+
       if !symbol.empty? || width.match(/\%/) || height.match(/\%/)
         if width == height
-          image = shave(image)
-          image.resize "#{width}"
+          shave(convert, image)
+          convert.resize "#{width}"
         else
-          image.resize "#{width}x#{height}#{symbol}"
+          convert.resize "#{width}x#{height}#{symbol}"
         end
+
+        return
+      end
+
+      if width == height
+        shave(convert, image)
+        value = (width.to_f / image[:width].to_f) * 100
+        convert.resize "#{value}%"
       else
-        if width == height
-          image = shave(image)
-          value = (width.to_f / image[:width].to_f) * 100
-          image.resize "#{value}%"
+        if width.empty?
+          value = (height.to_f / image[:height].to_f)  * 100
+          convert.resize "#{value}%"
+        elsif height.empty?
+          value = (width.to_f / image[:width].to_f)  * 100
+          convert.resize "#{value}%"
         else
-          if width.empty?
-            value = (height.to_f / image[:height].to_f)  * 100
-            image.resize "#{value}%"
-          elsif height.empty?
-            value = (width.to_f / image[:width].to_f)  * 100
-            image.resize "#{value}%"
-          else
-            image.resize "#{width}x#{height}"
-          end
+          convert.resize "#{width}x#{height}"
         end
       end
-      return image
+
+      return
     end
 
-    def shave(image)
+    def shave(convert, image)
       w, h = image[:width], image[:height]
+
       if w > h
         shave_off = ((w - h) / 2).round
-        image.shave "#{shave_off}x0"
+        convert.shave "#{shave_off}x0"
       else
         shave_off = ((h - w) / 2).round
-        image.shave "0x#{shave_off}"
+        convert.shave "0x#{shave_off}"
       end 
-      return image
     end
 
-    def auto_orient!(img, file)
+    def auto_orient!(img, covert)
       if img.exif["Orientation"].to_i > 1
-        img.auto_orient
-        img.write file
+        convert.auto_orient
       end
     end
 

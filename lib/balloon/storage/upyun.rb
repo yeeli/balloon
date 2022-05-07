@@ -16,9 +16,11 @@ module Balloon
 
       def store!
         _store_path = store_path
+        cache_meta = @uploader.cache_meta
         original_file = set_upload_name
+
         store_original_file = ::File.join _store_path, original_file       
-        cache_original_file = ::File.join @uploader.cache_path, @uploader.info[:filename]
+        cache_original_file = ::File.join @uploader.cache_path, cache_meta[:filename]
         file = ::File.new cache_original_file
         response = connection.put(store_original_file, file.read, file.size)
         raise "Connection errors" if response.nil?
@@ -26,12 +28,13 @@ module Balloon
         if !@uploader.upyun_is_image && @uploader.respond_to?(:uploader_size)
           @uploader.uploader_size.each do |s, o|
             store_file = ::File.join _store_path, set_upload_name(s)
-            cache_file = ::File.join @uploader.cache_path, @uploader.info[:basename]+ "_#{s}"+"."+ @uploader.info[:extension]
+            cache_file = ::File.join @uploader.cache_path, cache_meta[:basename]+ "_#{s}"+"."+ cache_meta[:extension]
             file = ::File.new cache_file
             connection.put(store_file, file.read, file.size)
           end
         end
 
+        FileUtils.remove_dir(@uploader.cache_path)
         return { filename: original_file, basename: store_name }
       end
 

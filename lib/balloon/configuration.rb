@@ -1,7 +1,10 @@
 module Balloon
   module Configuration
 
-    STORAGE_EGINE = { file: "Balloon::Storage::File", upyun: "Balloon::Storage::Upyun" }
+    STORAGE_EGINE = {
+      file: "Balloon::Storage::File",
+      upyun: "Balloon::Storage::Upyun"
+    }
 
     class << self
       def included(base)

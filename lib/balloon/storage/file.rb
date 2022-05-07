@@ -3,6 +3,7 @@ module Balloon
     class File < Balloon::Storage::Store
       def store!
         _store_path = store_path
+        cache_meta = @uploader.cache_meta
 
         if !::File.exists? _store_path
           FileUtils.mkdir_p _store_path
@@ -10,17 +11,23 @@ module Balloon
         end
 
         original_file = set_upload_name
+
         store_original_file = ::File.join _store_path, original_file
-        cache_original_file = ::File.join @uploader.cache_path, @uploader.info[:filename]
+        cache_original_file = ::File.join @uploader.cache_path, cache_meta[:filename]
+
         FileUtils.mv cache_original_file, store_original_file
 
         if @uploader.respond_to?(:uploader_size)
           @uploader.uploader_size.each do |s, o|
             store_file = ::File.join _store_path, set_upload_name(s)
-            cache_file = ::File.join @uploader.cache_path, @uploader.info[:basename]+ "_#{s}"+"."+ @uploader.info[:extension]
+            cache_file = ::File.join @uploader.cache_path, cache_meta[:basename]+ "_#{s}"+"."+ cache_meta[:extension]
             FileUtils.mv cache_file, store_file
           end
         end
+
+        # Remove cache path
+        FileUtils.remove_dir(@uploader.cache_path)
+
         return { filename: original_file, basename: store_name}
       end
 
@@ -55,7 +62,8 @@ module Balloon
       end
 
       def store_path
-        ::File.expand_path ::File.join(@uploader.root, @uploader.store_dir, upload_dir)
+        root_path = @uploader.root || "."
+        ::File.expand_path ::File.join(root_path, @uploader.store_dir, upload_dir)
       end
     end
   end

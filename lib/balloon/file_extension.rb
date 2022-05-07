@@ -32,7 +32,8 @@ module Balloon
     IMAGE_EXT_LIST = { 
       "image/gif" => "gif",
       "image/jpeg" => "jpg",
-      "image/png" => "png" 
+      "image/png" => "png",
+      "image/webp" => "webp"
     }
 
     def initialize(file, mime_type = nil)
@@ -133,6 +134,9 @@ module Balloon
       end
     end
 
+    def self.get_extension(mime_type)
+      IMAGE_EXT_LIST[mime_type]
+    end
 
     # @todo What Change basename add extension
     def save_to(new_path, permissions = nil, directory_permission = nil)

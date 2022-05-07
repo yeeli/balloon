@@ -22,15 +22,15 @@ module Balloon
           end
 
           def #{name}
-            @info
+            @meta
           end
 
           def uploader_save
-            return if info.nil?
+            return if cache_meta.nil?
             set_storage_engine
             store_info = storage_engine.store!
-            @info[:filename] = store_info[:filename]
-            @info[:basename] = store_info[:basename]
+            @meta[:filename] = store_info[:filename]
+            @meta[:basename] = store_info[:basename]
           end
 
           def uploader_name
@@ -67,20 +67,20 @@ module Balloon
 
         class_eval <<-RUBY
           def save_db
-            return if info.nil?
-            self.file_name = info[:filename]
-            self.content_type = info[:mime_type]
-            self.file_size = info[:size]
+            return if meta.nil?
+            self.file_name = meta[:filename]
+            self.content_type = meta[:mime_type]
+            self.file_size = meta[:size]
             self.storage = store_storage.to_s
-            self.width = info[:width]
-            self.height = info[:height]
+            self.width = meta[:width]
+            self.height = meta[:height]
           end
 
           def url(size_name = nil)
            return "" if !respond_to?(:file_name) || file_name.nil?
            extension = self.file_name.to_s.match(%r"(?!\\.{1})\\w{2,}$")
            basename = self.file_name.to_s.gsub(%r"\\.{1}\\w{2,}$",'')
-           @info = { basename: basename, extension: extension.to_s }
+           @meta = { basename: basename, extension: extension.to_s }
            set_storage_engine
            storage_engine.retrieve!(size_name)
           end
@@ -89,7 +89,7 @@ module Balloon
            return if !respond_to?(:file_name) || file_name.nil?
            extension = self.file_name.to_s.match(%r"(?!\\.{1})\\w{2,}$")
            basename = self.file_name.to_s.gsub(%r"\\.{1}\\w{2,}$",'')
-           @info = { basename: basename, extension: extension.to_s }
+           @meta = { basename: basename, extension: extension.to_s }
            set_storage_engine
            storage_engine.delete!
           end

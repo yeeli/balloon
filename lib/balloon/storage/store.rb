@@ -10,8 +10,9 @@ module Balloon
       def retrieve!(size_name = nil); end
 
       def upload_file
-        file_info = @uploader.info
+        file_info = @uploader.meta
         return {} if file_info.nil?
+
         basename = file_info[:basename] || ""
         extension = file_info[:extension] || ""
         { basename: basename, extension: extension }
@@ -22,24 +23,30 @@ module Balloon
       end
 
       def store_name
-        return upload_file[:basename] if !@uploader.respond_to?(:uploader_name_format) 
+        if !@uploader.respond_to?(:uploader_name_format)
+          return upload_file[:basename]
+        end
+
         name_format = @uploader.uploader_name_format
         name = name_format[:name]
-        if name_format[:format].to_s == "downcase" 
-          name = name.downcase
-        elsif name_format[:format].to_s == "upcase"
-          name = name.upcase
-        else
-          name
+
+        if name_format[:format].to_s == "downcase"
+          return name.downcase
         end
+
+        if name_format[:format].to_s == "upcase"
+          return name.upcase
+        end
+
+        name
       end
 
       def set_upload_name(size_name = nil )
-        if size_name 
-          store_name + "_#{size_name.to_s}" + "." + upload_file[:extension] 
-        else
-          store_name + "." + upload_file[:extension] 
+        cache_meta = @uploader.cache_meta
+        if size_name
+          return store_name + "_#{size_name.to_s}" + "." + cache_meta[:extension]
         end
+        store_name + "." + cache_meta[:extension]
       end
 
       def connection
@@ -49,7 +56,7 @@ module Balloon
         conn = Http::Client.new(options[:url]) do |builder|
           builder.headers = options[:headers]
           builder.basic_auth(basic[:user], basic[:password]) if !basic.nil?
-          builder.token_auth(self, token) if !token.nil? 
+          builder.token_auth(self, token) if !token.nil?
         end
         return conn
       end
