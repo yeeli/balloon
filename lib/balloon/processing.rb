@@ -5,6 +5,7 @@ module Balloon
     extend ActiveSupport::Concern
 
     def image_processing(image)
+      data = {}
       ext = image.extension
 
       if respond_to?(:uploader_type_format)
@@ -12,8 +13,10 @@ module Balloon
       end
 
       processed_img = handle_original(image, ext)
+      data[:original] = get_image_data(processed_img)
 
-      handle_resize(image, ext)
+      resized_img = handle_resize(image, ext)
+      data.merge!(resized_img)
 
       mime_type = processed_img.mime_type
       extension = FileExtension.get_extension(mime_type)
@@ -26,7 +29,8 @@ module Balloon
         size: processed_img.size,
         filename: filename,
         mime_type: mime_type,
-        extension: extension
+        extension: extension,
+        data: data
       }
     end
 
@@ -46,8 +50,9 @@ module Balloon
     end
 
     def handle_resize(file, ext)
-      return unless self.respond_to?(:uploader_size)
-      return if store_storage.to_s == "upyun" && upyun_is_image
+      return {} unless self.respond_to?(:uploader_size)
+      return {} if store_storage.to_s == "upyun" && upyun_is_image
+      data = {}
 
       uploader_size.each do |size, o|
         img = MiniMagick::Image.open(file.path)
@@ -64,8 +69,11 @@ module Balloon
         convert << cache_file
         convert.call
 
-        # img.write File.join(cache_path, "#{file.basename}_#{size}.#{ext}")
+        processed_img = MiniMagick::Image.open(cache_file)
+        data[size] = get_image_data(processed_img)
       end
+
+      return data
     end
 
     def resize(convert, image, size)
@@ -78,7 +86,6 @@ module Balloon
         else
           convert.resize "#{width}x#{height}#{symbol}"
         end
-
         return
       end
 
@@ -86,19 +93,18 @@ module Balloon
         shave(convert, image)
         value = (width.to_f / image[:width].to_f) * 100
         convert.resize "#{value}%"
-      else
-        if width.empty?
-          value = (height.to_f / image[:height].to_f)  * 100
-          convert.resize "#{value}%"
-        elsif height.empty?
-          value = (width.to_f / image[:width].to_f)  * 100
-          convert.resize "#{value}%"
-        else
-          convert.resize "#{width}x#{height}"
-        end
+        return
       end
 
-      return
+      if width.empty?
+        value = (height.to_f / image[:height].to_f)  * 100
+        convert.resize "#{value}%"
+      elsif height.empty?
+        value = (width.to_f / image[:width].to_f)  * 100
+        convert.resize "#{value}%"
+      else
+        convert.resize "#{width}x#{height}"
+      end
     end
 
     def shave(convert, image)
@@ -107,16 +113,25 @@ module Balloon
       if w > h
         shave_off = ((w - h) / 2).round
         convert.shave "#{shave_off}x0"
-      else
-        shave_off = ((h - w) / 2).round
-        convert.shave "0x#{shave_off}"
+        return
       end 
+
+      shave_off = ((h - w) / 2).round
+      convert.shave "0x#{shave_off}"
     end
 
     def auto_orient!(img, covert)
       if img.exif["Orientation"].to_i > 1
         convert.auto_orient
       end
+    end
+
+    def get_image_data(img)
+      return {
+        width: img.width,
+        height: img.height,
+        size: img.size
+      }
     end
 
     # parseing the size string

@@ -145,9 +145,14 @@ class CreateImages < ActiveRecord::Migration
       t.integer :width
       t.integer :height
       t.string :content_type
-      t.integer :file_size
+      t.bigint :file_size
       t.string :storage
-      t.datetime :created_at
+      
+      # Postgresql 可以JSONB 作为metadata格式
+      t.jsonb :metadata 
+      # Mysql和其它需要使用text
+      t.text :metadata
+   
       t.timestamps
     end
   end

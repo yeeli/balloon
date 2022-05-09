@@ -51,6 +51,7 @@ module Balloon
           key :content_type, String
           key :file_size, Integer
           key :storage, String
+          key :metadata
           key :created_at
         elsif defined?(Mongoid)
           field :file_name, type: String
@@ -59,6 +60,7 @@ module Balloon
           field :content_type, type: String
           field :file_size, type: String
           field :storage, type: String
+          field :metadata
           field :created_at
         end
 
@@ -74,6 +76,9 @@ module Balloon
             self.storage = store_storage.to_s
             self.width = meta[:width]
             self.height = meta[:height]
+            if self.respond_to?(:metadata)
+              self.metadata = meta[:data]
+            end
           end
 
           def url(size_name = nil)

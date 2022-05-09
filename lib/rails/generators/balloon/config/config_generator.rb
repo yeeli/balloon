@@ -2,7 +2,7 @@ module Balloon
   module Generators
     class ConfigGenerator < Rails::Generators::Base
       desc "create the Balloon configuration at config/balloon.yml"
-      
+
       def self.source_root
         @source_root ||= File.expand_path("../templates", __FILE__)
       end

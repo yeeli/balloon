@@ -10,7 +10,7 @@ class Upload < Balloon::Base
   uploader :image
   uploader_dir 'uploads'
   uploader_mimetype_white %w[image/jpeg image/png image/gif image/webp]
-  uploader_name_format name: "output", format: 'upcase'
+  uploader_name_format name: 'output', format: 'upcase'
   uploader_type_format 'webp'
   uploader_size thumb: '200x', small: '600x>', large: '800x>'
 end

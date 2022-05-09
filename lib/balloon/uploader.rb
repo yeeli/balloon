@@ -24,13 +24,13 @@ module Balloon
       file_mime_type = uploader_file_ext.mime_type
 
       if self.respond_to?(:uploader_mimetype_white)
-        if !uploader_mimetype_white.include?(file_mime_type)          
+        if !uploader_mimetype_white.include?(file_mime_type)
           raise Balloon::DownloadError, I18n.translate(:"errors.messages.down_mime_error")
         end
       end
-      
+
       if self.respond_to?(:uploader_mimetype_black)
-        if !uploader_mimetype_black.include?(file_mime_type)          
+        if !uploader_mimetype_black.include?(file_mime_type)
           raise Balloon::DownloadError, I18n.translate(:"errors.messages.down_mime_error")
         end
       end
@@ -43,7 +43,8 @@ module Balloon
         height: @cache_meta[:height],
         size: @cache_meta[:size],
         mime_type: @cache_meta[:mime_type],
-        extension: @cache_meta[:extension]
+        extension: @cache_meta[:extension],
+        data: @cache_meta[:data]
       }
     end
 
@@ -70,7 +71,7 @@ module Balloon
 
       def uploader_name_format(info)
         define_method "uploader_name_format" do
-          name = info[:name].nil? ? info[:name] : info[:name].call(self)
+          name = info[:name].is_a?(Proc) ? info[:name].call(self) : info[:name].to_s
           { name: name, format: info[:format] }
         end
       end
