@@ -31,11 +31,21 @@ module Balloon
         return { filename: original_file, basename: store_name}
       end
 
-      def retrieve!(size_name = nil)
+      def path!(size_name = nil)
         return "" if !upload_file
         path = ::File.join upload_dir, store_filename(size_name)
-        return "/" + path if @uploader.asset_host.nil?
-        @uploader.asset_host + "/" + path
+        return "/#{path}"
+      end
+
+      def local_path!(size_name = nil)
+        path = ::File.join @uploader.store_dir, path!(size_name)
+        return ::File.expand_path(::File.join(@uploader.root, path))
+      end
+
+      def retrieve!(size_name = nil)
+        path = path!(size_name)
+        return path if @uploader.asset_host.nil?
+        return "#{@uploader.asset_host}#{path}"
       end
 
       def delete!

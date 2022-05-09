@@ -16,4 +16,7 @@ class Upload < Balloon::Base
 end
 
 upload = Upload.new("input.jpg")
-upload.upload_store
+p upload.upload_store
+p upload.from_store
+p upload.path
+p upload.local_path

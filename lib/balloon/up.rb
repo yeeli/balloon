@@ -90,6 +90,24 @@ module Balloon
            storage_engine.retrieve!(size_name)
           end
 
+          def path(size_name = nil)
+           return "" if !respond_to?(:file_name) || file_name.nil?
+           extension = self.file_name.to_s.match(%r"(?!\\.{1})\\w{2,}$")
+           basename = self.file_name.to_s.gsub(%r"\\.{1}\\w{2,}$",'')
+           @meta = { basename: basename, extension: extension.to_s }
+           set_storage_engine
+           storage_engine.path!(size_name)
+          end
+
+          def local_path(size_name = nil)
+           return "" if !respond_to?(:file_name) || file_name.nil?
+           extension = self.file_name.to_s.match(%r"(?!\\.{1})\\w{2,}$")
+           basename = self.file_name.to_s.gsub(%r"\\.{1}\\w{2,}$",'')
+           @meta = { basename: basename, extension: extension.to_s }
+           set_storage_engine
+           storage_engine.local_path!(size_name)
+          end
+
           def uploader_delete
            return if !respond_to?(:file_name) || file_name.nil?
            extension = self.file_name.to_s.match(%r"(?!\\.{1})\\w{2,}$")

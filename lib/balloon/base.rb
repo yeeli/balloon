@@ -40,6 +40,14 @@ module Balloon
       storage_engine.retrieve!(size_name)
     end
 
+    def path(size_name = nil)
+      storage_engine.path!(size_name)
+    end
+
+    def local_path(size_name = nil)
+      storage_engine.local_path!(size_name)
+    end
+
     def upload_delete
       storage_engine.delete!
     end
