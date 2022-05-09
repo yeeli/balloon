@@ -15,8 +15,8 @@ module Balloon
       processed_img = handle_original(image, ext)
       data[:original] = get_image_data(processed_img)
 
-      resized_img = handle_resize(image, ext)
-      data.merge!(resized_img)
+      total_size = handle_resize(image, ext, data)
+      data[:total_size] = processed_img.size.to_i + total_size.to_i
 
       mime_type = processed_img.mime_type
       extension = FileExtension.get_extension(mime_type)
@@ -45,14 +45,14 @@ module Balloon
       cache_file = File.join(cache_path, "#{file.basename}.#{ext}")
       convert << cache_file
       convert.call
-      
+
       return MiniMagick::Image.open(cache_file)
     end
 
-    def handle_resize(file, ext)
-      return {} unless self.respond_to?(:uploader_size)
-      return {} if store_storage.to_s == "upyun" && upyun_is_image
-      data = {}
+    def handle_resize(file, ext, data)
+      return unless self.respond_to?(:uploader_size)
+      return if store_storage.to_s == "upyun" && upyun_is_image
+      total_size = 0
 
       uploader_size.each do |size, o|
         img = MiniMagick::Image.open(file.path)
@@ -71,13 +71,14 @@ module Balloon
 
         processed_img = MiniMagick::Image.open(cache_file)
         data[size] = get_image_data(processed_img)
+        total_size += processed_img.size
       end
 
-      return data
+      return total_size
     end
 
     def resize(convert, image, size)
-      width, height, symbol = size[:width], size[:height], size[:symbol]     
+      width, height, symbol = size[:width], size[:height], size[:symbol]
 
       if !symbol.empty? || width.match(/\%/) || height.match(/\%/)
         if width == height
@@ -114,7 +115,7 @@ module Balloon
         shave_off = ((w - h) / 2).round
         convert.shave "#{shave_off}x0"
         return
-      end 
+      end
 
       shave_off = ((h - w) / 2).round
       convert.shave "0x#{shave_off}"
