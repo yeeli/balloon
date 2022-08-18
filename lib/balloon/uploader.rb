@@ -18,7 +18,17 @@ module Balloon
     end
 
     def save_to_cache(up_file)
-      uploader_file = up_file.is_a?(String) && up_file.include?("://") ? down_url(up_file) : up_file
+      upload_data = {}
+      uploader_file = up_file
+
+      if up_file.is_a?(String) && up_file.include?("://")
+        upload_data[:remote_url] = up_file
+        uploader_file = down_url(up_file)
+      end
+
+      if up_file.is_a?(ActionDispatch::Http::UploadedFile)
+        upload_data[:original_filename] = up_file.original_filename
+      end
 
       uploader_file_ext = Balloon::FileExtension.new(uploader_file)
       file_mime_type = uploader_file_ext.mime_type
@@ -44,7 +54,8 @@ module Balloon
         size: @cache_meta[:size],
         mime_type: @cache_meta[:mime_type],
         extension: @cache_meta[:extension],
-        data: @cache_meta[:data]
+        upload_data: upload_data,
+        data: upload_data.merge(@cache_meta[:data])
       }
     end
 
