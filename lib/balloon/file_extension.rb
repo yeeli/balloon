@@ -98,7 +98,7 @@ module Balloon
     def mime_type
       return get_mime_type(MIME::Types[@mime_type]) if @mime_type
       ext_name = split_extension(filename)[1] if !filename.blank?
-      return get_mime_type(MIME::Types.type_for(ext_name)) if !ext_name.blank? 
+      return get_mime_type(MIME::Types.type_for(ext_name)) if !ext_name.blank?
       if type = read_mime_type then return type end
       if type = command_mime_type then return type end
     end
@@ -119,7 +119,7 @@ module Balloon
     end
 
     def exists?
-      return File.exists?(self.path) if !path.empty?
+      return File.exist?(self.path) if !path.empty?
       return false
     end
 

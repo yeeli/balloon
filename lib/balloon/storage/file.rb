@@ -5,7 +5,7 @@ module Balloon
         _store_path = store_path
         cache_meta = @uploader.cache_meta
 
-        if !::File.exists? _store_path
+        if !::File.exist? _store_path
           FileUtils.mkdir_p _store_path
           FileUtils.chmod_R @uploader.dir_permissions.to_i,  _store_path
         end
@@ -51,11 +51,11 @@ module Balloon
       def delete!
         return false if !upload_file
         path = ::File.join store_path, store_filename
-        FileUtils.rm(path) if ::File.exists?(path)
+        FileUtils.rm(path) if ::File.exist?(path)
         if @uploader.respond_to?(:uploader_size)
           @uploader.uploader_size.each do |s, o|
             path = ::File.join store_path, store_filename(s)
-            FileUtils.rm(path) if ::File.exists?(path)
+            FileUtils.rm(path) if ::File.exist?(path)
           end
         end
       end
