@@ -23,12 +23,12 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'activesupport'
-  spec.add_dependency 'faraday'
   spec.add_dependency 'mime-types'
   spec.add_dependency 'mini_magick'
 
   # Development dependency
 
+  spec.add_development_dependency 'faraday'
   spec.add_development_dependency 'activerecord'
   spec.add_development_dependency 'bson_ext'
   spec.add_development_dependency 'mongoid'
