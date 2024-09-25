@@ -18,7 +18,7 @@ module Balloon
       total_size = handle_resize(image, ext, data)
       data[:total_size] = processed_img.size.to_i + total_size.to_i
 
-      mime_type = processed_img.mime_type
+      mime_type = FileExtension.get_mime_type(processed_img.type)
       extension = FileExtension.get_extension(mime_type)
       filename = "#{image.basename}.#{extension}"
 
@@ -36,7 +36,7 @@ module Balloon
 
     def handle_original(file, ext)
       original_image =  MiniMagick::Image.open(file.path)
-      convert = MiniMagick::Tool::Convert.new
+      convert = MiniMagick.convert
       convert << file.path
 
       auto_orient!(original_image, convert)
@@ -58,7 +58,7 @@ module Balloon
         img = MiniMagick::Image.open(file.path)
         raise ProcessError, "process error" unless img
 
-        convert = MiniMagick::Tool::Convert.new
+        convert = MiniMagick.convert
         convert << file.path
 
         auto_orient!(img, convert)

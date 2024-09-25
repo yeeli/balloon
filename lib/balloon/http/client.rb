@@ -45,7 +45,7 @@ module Balloon
       def connection
         @connection ||= begin
                           conn = Faraday.new(url: url)
-                          conn.basic_auth(login, pass) if login
+                          conn.request(:authorization, :basic, login, pass) if login
                           conn.build do |b|
                             conn_build.call(b)
                           end if conn_build

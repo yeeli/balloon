@@ -26,7 +26,7 @@ module Balloon
         uploader_file = down_url(up_file)
       end
 
-      if up_file.is_a?(ActionDispatch::Http::UploadedFile)
+      if up_file.is_a?(::ActionDispatch::Http::UploadedFile)
         upload_data[:original_filename] = up_file.original_filename
       end
 

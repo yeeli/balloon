@@ -1,6 +1,7 @@
 require 'balloon/version'
 require 'active_support'
 require 'active_support/core_ext'
+require 'action_dispatch'
 
 # Balloon
 module Balloon

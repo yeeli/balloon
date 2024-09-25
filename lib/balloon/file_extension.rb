@@ -29,6 +29,13 @@ module Balloon
       ["\xff\xd8\xff\xe1(.*){2}Exif", "image/jpeg"]
     ]
 
+    IMAGE_TYPE_LIST = {
+      "GIF" => "image/gif",
+      "JPEG" => "image/jpeg",
+      "PNG" => "image/png",
+      "WEBP" => "image/webp"
+    }
+
     IMAGE_EXT_LIST = { 
       "image/gif" => "gif",
       "image/jpeg" => "jpg",
@@ -132,6 +139,11 @@ module Balloon
       else
         ""
       end
+    end
+
+    def self.get_mime_type(type)
+      return type if type =~ /.+\/.+/
+      IMAGE_TYPE_LIST[type]
     end
 
     def self.get_extension(mime_type)
